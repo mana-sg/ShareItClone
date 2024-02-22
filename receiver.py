@@ -1,64 +1,65 @@
 import socket
 import time
 
-filenames = []
 
-
-def receive_file(filenames, peer_ip, peer_port):
+def receive_file(filename, peer_ip, peer_port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind((peer_ip, peer_port))
         server_socket.listen(1)
-        print("Server is listening on port", peer_port)
+        print("Server is listening on port", port)
         conn, addr = server_socket.accept()
         print("Connection established with", addr)
-        for filename in filenames:
-            with open(filename, 'wb') as f:
-                while True:
-                    data = conn.recv(1024)
-                    if not data:
-                        break
-                    f.write(data)
-            print(f"{filename} received successfully")
+        with open(filename, 'wb') as f:
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                f.write(data)
+        print("File received successfully")
 
 
 def receive_filenames(peer_ip, peer_port):
+    filenames = ""
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Bind the socket to the receiver's IP and port
         s.bind((peer_ip, peer_port))
+        # Listen for incoming connections
         s.listen()
 
         print('Waiting for a connection...')
         conn, addr = s.accept()
         with conn:
             print('Connected by', addr)
-            filenames = []
+
             while True:
                 data = conn.recv(1024)
                 if not data:
                     break
-                filenames.append(data.decode())
+                filenames = data.decode()
 
             print('Received filenames:', filenames)
+    return filenames
 
 
 def connect_to_peer(peer_ip):
     print("I WANT YOUR FILE!!!")
-    receive_filenames(peer_ip, 12333)
+    filenames = receive_filenames(peer_ip, 12333)
     receive_file(filenames, peer_ip, 6666)
 
 
-def receive_broadcast(local_ip, port):
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-        s.bind(('', port))
-        print("Listening for broadcast messages...")
+# def receive_broadcast(local_ip, port):
+#     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+#         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+#         s.bind(('', port))
+#         print("Listening for broadcast messages...")
 
-        while True:
-            data, addr = s.recvfrom(1024)
-            print("Received broadcast message from {}: {}".format(
-                addr, data.decode()))
-            if (data.decode() == local_ip):
-                connect_to_peer(local_ip)
-                break
+#         while True:
+#             data, addr = s.recvfrom(1024)
+#             print("Received broadcast message from {}: {}".format(
+#                 addr, data.decode()))
+#             if (data.decode() == local_ip):
+#                 connect_to_peer(local_ip)
+#                 break
 
 
 def broadcast_message(message, port):
@@ -85,4 +86,4 @@ if __name__ == "__main__":
     message = get_local_ip()
     port = 12345
     broadcast_message(message, port)
-    receive_broadcast(message, port)
+    connect_to_peer(message)
