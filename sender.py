@@ -11,7 +11,7 @@ class Sender:
         self.port = 12345
         self.selected_receiver = ""
         self.filepath = ""
-        self.peer_port = 12333
+        self.peer_port = [12333, 60000]
 
     def get_local_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -39,20 +39,12 @@ class Sender:
         client_index = int(input(
             "Enter index of whih person you want to send the file to: "))
         print("Sending file to: ", self.receivers[client_index])
-        self.selected_receiver = self.receivers[client_index]
-    #
-    # def broadcast_message(self, message, port):
-    #     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-    #         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-    #         start_time = time.time()
-    #         while time.time() - start_time <= 5:
-    #             s.sendto(message.encode(), ('<broadcast>', port))
-    #             print("Broadcast message sent:", message)
-    #             time.sleep(1)
+        self.selected_receiver = self.receivers[client_index][0]
+
 
     def connect_to_peer(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-            client_socket.connect((self.selected_receiver, self.peer_port))
+            client_socket.connect((self.selected_receiver, self.peer_port[1]))
             with open(self.filepath, 'rb') as f:
                 while True:
                     data = f.read(1024)
@@ -64,8 +56,9 @@ class Sender:
 
     def send_file_names(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((self.selected_receiver, self.peer_port))
+            s.connect((self.selected_receiver, self.peer_port[0]))
             s.sendall(self.filepath.split("/")[-1].encode())
+            time.sleep(3)
 
     def select_file(self):
         root = tk.Tk()
