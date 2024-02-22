@@ -11,7 +11,7 @@ class Sender:
         self.port = 12345
         self.selected_receiver = ""
         self.filepath = ""
-        self.peer_port = [12333, 60000]
+        self.peer_port = 12333
 
     def get_local_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -41,10 +41,9 @@ class Sender:
         print("Sending file to: ", self.receivers[client_index])
         self.selected_receiver = self.receivers[client_index][0]
 
-
     def connect_to_peer(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-            client_socket.connect((self.selected_receiver, self.peer_port[1]))
+            client_socket.connect((self.selected_receiver, self.peer_port))
             with open(self.filepath, 'rb') as f:
                 while True:
                     data = f.read(1024)
@@ -56,23 +55,12 @@ class Sender:
 
     def send_file_names(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((self.selected_receiver, self.peer_port[0]))
+            s.connect((self.selected_receiver, self.peer_port))
             s.sendall(self.filepath.split("/")[-1].encode())
-            time.sleep(3)
+        time.sleep(5)
 
     def select_file(self):
         root = tk.Tk()
         root.withdraw()
         self.filepath = filedialog.askopenfilename()
         root.destroy()
-    #
-    # if __name__ == "__main__":
-    #     my_ip = get_local_ip()
-    #     port = 12345
-    #     receiver_ip = receive_broadcast(port)
-    #     filepath = select_file()
-    #     filename = filepath.split("/")[-1]
-    #     print(filepath)
-    #     send_file_names(filename, receiver_ip[0], 12333)
-    #     time.sleep(3)
-    #     connect_to_peer(filepath, receiver_ip[0], 6666)
