@@ -17,7 +17,6 @@ def get_local_ip():
 
 
 def receive_broadcast(port):
-    # Create a UDP socket
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         s.bind(('', port))
@@ -27,8 +26,6 @@ def receive_broadcast(port):
         start_time = time.time()
         while True and (time.time() - start_time <= 5):
             data, addr = s.recvfrom(1024)
-            # print("Received broadcast message from {}: {}".format(
-            #     addr, data.decode()))
             if (addr not in receivers):
                 receivers.append(addr)
                 print("Receivers list: ", receivers)
@@ -49,22 +46,23 @@ def broadcast_message(message, port):
             time.sleep(1)
 
 
-def connect_to_peer(filename, peer_ip, peer_port):
-    # Create a TCP/IP socket
+def connect_to_peer(filenames, peer_ip, peer_port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        # Connect the socket to the server
         client_socket.connect((peer_ip, peer_port))
-
-        # Open the file to be sent
-        with open(filename, 'rb') as f:
-            # Read data from the file and send it
+        with open(filenames, 'rb') as f:
             while True:
                 data = f.read(1024)
                 if not data:
                     break
-                client_socket.sendall(data)
+                client_socket.send(data)
 
-        print("File sent successfully")
+        print(f"{filename} sent successfully")
+
+
+def send_file_names(filenames, peer_ip, peer_port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((peer_ip, peer_port))
+        s.sendall(filename.encode())
 
 
 def select_file():
@@ -78,6 +76,10 @@ if __name__ == "__main__":
     my_ip = get_local_ip()
     port = 12345
     receiver_ip = receive_broadcast(port)
-    broadcast_message(receiver_ip[0], port)
+    # broadcast_message(receiver_ip[0], port)
     filepath = select_file()
-    connect_to_peer(filepath, receiver_ip[0], 12333)
+    filename = filepath.split("/")[-1]
+    print(filepath)
+    send_file_names(filename, receiver_ip[0], 12333)
+    time.sleep(3)
+    connect_to_peer(filepath, receiver_ip[0], 6666)

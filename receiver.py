@@ -1,27 +1,49 @@
 import socket
 import time
-# import threading
+
+filenames = []
 
 
-def receive_file(filename, peer_ip, peer_port):
+def receive_file(filenames, peer_ip, peer_port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
         server_socket.bind((peer_ip, peer_port))
         server_socket.listen(1)
         print("Server is listening on port", peer_port)
         conn, addr = server_socket.accept()
         print("Connection established with", addr)
-        with open(filename, 'wb') as f:
+        for filename in filenames:
+            with open(filename, 'wb') as f:
+                while True:
+                    data = conn.recv(1024)
+                    if not data:
+                        break
+                    f.write(data)
+            print(f"{filename} received successfully")
+
+
+def receive_filenames(peer_ip, peer_port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind((peer_ip, peer_port))
+        s.listen()
+
+        print('Waiting for a connection...')
+        conn, addr = s.accept()
+        with conn:
+            print('Connected by', addr)
+            filenames = []
             while True:
                 data = conn.recv(1024)
                 if not data:
                     break
-                f.write(data)
-        print("File received successfully")
+                filenames.append(data.decode())
+
+            print('Received filenames:', filenames)
 
 
 def connect_to_peer(peer_ip):
     print("I WANT YOUR FILE!!!")
-    receive_file("JESUS.JPG", peer_ip, 12333)
+    receive_filenames(peer_ip, 12333)
+    receive_file(filenames, peer_ip, 6666)
 
 
 def receive_broadcast(local_ip, port):
@@ -35,7 +57,6 @@ def receive_broadcast(local_ip, port):
             print("Received broadcast message from {}: {}".format(
                 addr, data.decode()))
             if (data.decode() == local_ip):
-                # threading.Thread(target=connect_to_peer, args=(local_ip)).start()
                 connect_to_peer(local_ip)
                 break
 
