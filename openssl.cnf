@@ -1,0 +1,18 @@
+
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = In
+ST = Kar
+L = Beng
+O = shareit
+OU = shareit
+CN = shareit
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+

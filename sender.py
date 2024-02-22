@@ -2,6 +2,7 @@ import socket
 import time
 import tkinter as tk
 from tkinter import filedialog
+import ssl
 
 
 class Sender:
@@ -12,6 +13,7 @@ class Sender:
         self.selected_receiver = ""
         self.filepath = ""
         self.peer_port = 12333
+        self.peer_names = []
 
     def get_local_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,38 +28,44 @@ class Sender:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             s.bind(('', self.port))
+            s.settimeout(3)
 
             print("Listening for broadcast messages...")
 
-            start_time = time.time()
-            while True and (time.time() - start_time <= 5):
-                data, addr = s.recvfrom(1024)
+            while True:
+                try:
+                    data, addr = s.recvfrom(1024)
+                except socket.timeout:
+                    break
                 if (addr not in self.receivers):
                     self.receivers.append(addr)
-                    print("Receivers list: ", self.receivers)
-
-        client_index = int(input(
-            "Enter index of whih person you want to send the file to: "))
-        print("Sending file to: ", self.receivers[client_index])
-        self.selected_receiver = self.receivers[client_index][0]
+                    self.peer_names.append(data.decode())
 
     def connect_to_peer(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-            client_socket.connect((self.selected_receiver, self.peer_port))
-            with open(self.filepath, 'rb') as f:
-                while True:
-                    data = f.read(1024)
-                    if not data:
-                        break
-                    client_socket.send(data)
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.load_verify_locations('shareit.crt')
+        context.check_hostname = False
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((self.selected_receiver, self.peer_port))
+            with context.wrap_socket(sock, server_hostname=self.selected_receiver) as ssock:
+                with open(self.filepath, 'rb') as f:
+                    while True:
+                        data = f.read(1024)
+                        if not data:
+                            break
+                        ssock.send(data)
 
-            print(f"{self.filepath} sent successfully")
+                print(f"{self.filepath} sent successfully")
 
     def send_file_names(self):
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+        context.load_verify_locations('shareit.crt')
+        context.check_hostname = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.selected_receiver, self.peer_port))
-            s.sendall(self.filepath.split("/")[-1].encode())
-        time.sleep(5)
+            with context.wrap_socket(s, server_hostname=self.selected_receiver) as ssock:
+                ssock.sendall(self.filepath.split("/")[-1].encode())
+        time.sleep(2)
 
     def select_file(self):
         root = tk.Tk()
