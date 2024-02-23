@@ -19,6 +19,7 @@ class Receiver:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.my_ip, self.peer_port))
             server_socket.listen(1)
+            server_socket.settimeout(10)
             print("Server is listening on port", self.peer_port)
             with context.wrap_socket(server_socket, server_side=True) as ssock:
                 conn, addr = ssock.accept()
@@ -38,6 +39,7 @@ class Receiver:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.my_ip, self.peer_port))
             s.listen()
+            s.settimeout(10)
             print('Waiting for a connection...')
             with context.wrap_socket(s, server_side=True) as ssock:
                 conn, addr = ssock.accept()
@@ -53,6 +55,9 @@ class Receiver:
 
     def connect_to_peer(self):
         self.receive_filenames()
+        if (not self.filename):
+            print("Socket timeout. Exiting...")
+            exit()
         self.receive_file()
 
     def broadcast_message(self):
@@ -62,7 +67,6 @@ class Receiver:
             while time.time() - start_time <= 3:
                 s.sendto(self.username.encode(),
                          ('<broadcast>', self.broadcast_port))
-                # print(f"Broadcast message sent: {self.username}({self.my_ip})")
                 time.sleep(1)
 
     def get_local_ip(self):
