@@ -44,7 +44,11 @@ if __name__ == "__main__":
 
     elif choice == 2:
         receiver = Receiver(name)
-        receiver.broadcast_message()
+        while True:
+            receiver.broadcast_message()
+            choice = input("Enter Y to broadcast again or C to continue: ")
+            if choice == "C" or choice == "c":
+                break
         receiver.connect_to_peer()
 
     else:
