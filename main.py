@@ -12,6 +12,8 @@ if __name__ == "__main__":
         os.system(
             "openssl x509 -in shareit.csr -out shareit.crt -req -signkey shareit.key -days 365")
 
+    name = input("Enter your name: ")
+
     choice = int(input("Select 1 to send or 2 to receive file: "))
     if choice == 1:
         sender = Sender()
@@ -41,7 +43,7 @@ if __name__ == "__main__":
         sender.connect_to_peer()
 
     elif choice == 2:
-        receiver = Receiver("user2")
+        receiver = Receiver(name)
         receiver.broadcast_message()
         receiver.connect_to_peer()
 

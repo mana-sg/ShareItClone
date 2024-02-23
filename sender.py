@@ -12,7 +12,7 @@ class Sender:
         self.port = 12345
         self.selected_receiver = ""
         self.filepath = ""
-        self.peer_port = 12333
+        self.peer_port = [12333, 6666]
         self.peer_names = []
 
     def get_local_ip(self):
@@ -46,7 +46,7 @@ class Sender:
         context.load_verify_locations('shareit.crt')
         context.check_hostname = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((self.selected_receiver, self.peer_port))
+            sock.connect((self.selected_receiver, self.peer_port[1]))
             with context.wrap_socket(sock, server_hostname=self.selected_receiver) as ssock:
                 with open(self.filepath, 'rb') as f:
                     while True:
@@ -62,10 +62,10 @@ class Sender:
         context.load_verify_locations('shareit.crt')
         context.check_hostname = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.connect((self.selected_receiver, self.peer_port))
+            s.connect((self.selected_receiver, self.peer_port[0]))
             with context.wrap_socket(s, server_hostname=self.selected_receiver) as ssock:
                 ssock.sendall(self.filepath.split("/")[-1].encode())
-        time.sleep(2)
+        time.sleep(3)
 
     def select_file(self):
         root = tk.Tk()

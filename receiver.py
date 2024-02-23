@@ -7,7 +7,7 @@ class Receiver:
     def __init__(self, username):
         self.my_ip = self.get_local_ip()
         self.broadcast_port = 12345
-        self.peer_port = 12333
+        self.peer_port = [12333, 6666]
         self.filename = ""
         self.username = username
 
@@ -17,9 +17,9 @@ class Receiver:
             'shareit.crt', 'shareit.key')
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
-            server_socket.bind((self.my_ip, self.peer_port))
+            server_socket.bind((self.my_ip, self.peer_port[1]))
             server_socket.listen(1)
-            print("Server is listening on port", self.peer_port)
+            print("Server is listening on port", self.peer_port[1])
             with context.wrap_socket(server_socket, server_side=True) as ssock:
                 conn, addr = ssock.accept()
                 print("Connection established.")
@@ -36,7 +36,7 @@ class Receiver:
         context.load_cert_chain(
             'shareit.crt', 'shareit.key')
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.bind((self.my_ip, self.peer_port))
+            s.bind((self.my_ip, self.peer_port[0]))
             s.listen()
             print('Waiting for a connection...')
             with context.wrap_socket(s, server_side=True) as ssock:
