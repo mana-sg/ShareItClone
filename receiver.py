@@ -14,7 +14,7 @@ class Receiver:
     def receive_file(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(
-            'shareit.crt', 'shareit.key')
+            'certificates/shareit.crt', 'certificates/shareit.key')
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:
             server_socket.bind((self.my_ip, self.peer_port[1]))
@@ -34,7 +34,7 @@ class Receiver:
     def receive_filenames(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(
-            'shareit.crt', 'shareit.key')
+            'certificates//shareit.crt', 'certificates/shareit.key')
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.bind((self.my_ip, self.peer_port[0]))
             s.listen()

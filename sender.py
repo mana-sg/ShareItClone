@@ -43,7 +43,7 @@ class Sender:
 
     def connect_to_peer(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        context.load_verify_locations('shareit.crt')
+        context.load_verify_locations('certificates/shareit.crt')
         context.check_hostname = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((self.selected_receiver, self.peer_port[1]))
@@ -59,7 +59,7 @@ class Sender:
 
     def send_file_names(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        context.load_verify_locations('shareit.crt')
+        context.load_verify_locations('certificates/shareit.crt')
         context.check_hostname = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.selected_receiver, self.peer_port[0]))
