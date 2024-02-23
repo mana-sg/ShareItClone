@@ -50,11 +50,11 @@ class Sender:
             with context.wrap_socket(sock, server_hostname=self.selected_receiver) as ssock:
                 with open(self.filepath, 'rb') as f:
                     while True:
-                        data = f.read(1024)
+                        data = f.read(1048576)
                         if not data:
                             break
                         ssock.send(data)
-
+                        # time.sleep(1)
                 print(f"{self.filepath} sent successfully")
 
     def send_file_names(self):

@@ -1,17 +1,17 @@
 from sender import Sender
 from receiver import Receiver
 from tabulate import tabulate
-import os
+# import os
 
 
 if __name__ == "__main__":
-    if not os.path.exists('shareit.crt') and not os.path.exists('shareit.key'):
-        os.system("openssl genrsa -out shareit.key 2048")
-        os.system(
-            "openssl req -new -key shareit.key -out shareit.csr -config openssl.cnf")
-        os.system(
-            "openssl x509 -in shareit.csr -out shareit.crt -req -signkey shareit.key -days 365")
-
+    # if not os.path.exists('shareit.crt') and not os.path.exists('shareit.key'):
+    #     os.system("openssl genrsa -out shareit.key 2048")
+    #     os.system(
+    #         "openssl req -new -key shareit.key -out shareit.csr -config openssl.cnf")
+    #     os.system(
+    #         "openssl x509 -in shareit.csr -out shareit.crt -req -signkey shareit.key -days 365")
+    #
     name = input("Enter your name: ")
 
     choice = int(input("Select 1 to send or 2 to receive file: "))
