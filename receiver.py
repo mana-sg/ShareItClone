@@ -1,15 +1,21 @@
 import socket
 import time
 import ssl
+import threading
 
 
-class Receiver:
+class Receiver(threading.Thread):
     def __init__(self, username):
+        super().__init__()
         self.my_ip = self.get_local_ip()
         self.broadcast_port = 12345
         self.peer_port = [12333, 6666]
         self.filename = ""
         self.username = username
+        self._stop_event = threading.Event()
+
+    def stop(self):
+        self._stop_event.set()
 
     def receive_file(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
@@ -58,8 +64,7 @@ class Receiver:
     def broadcast_message(self):
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
-            start_time = time.time()
-            while time.time() - start_time <= 3:
+            while not self._stop_event.is_set():
                 s.sendto(self.username.encode(),
                          ('<broadcast>', self.broadcast_port))
                 time.sleep(1)

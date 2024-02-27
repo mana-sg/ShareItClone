@@ -3,6 +3,7 @@ import time
 import tkinter as tk
 from tkinter import filedialog
 import ssl
+import curses
 
 
 class Sender:
@@ -14,6 +15,40 @@ class Sender:
         self.filepath = ""
         self.peer_port = [12333, 6666]
         self.peer_names = []
+
+    def print_table(self, stdscr):
+
+        # indices = [i+1 for i in range(len(self.peer_names))]
+        # data = list(zip(indices, self.peer_names))
+        # table = tabulate(data, headers=["Index", "Peer Name"])
+        #
+        while True:
+            stdscr.clear()
+            stdscr.nodelay(True)
+            stdscr.addstr(
+                0, 0, "Enter the index of the person you want to send the")
+            stdscr.addstr(1, 0, f"Peers: {self.peer_names}")
+            client_index = stdscr.getch()
+            time.sleep(0.1)
+            if (len(self.peer_names) == 0):
+                print("No peers found, please wait while we are scanning!")
+
+            elif client_index-48 >= len(self.peer_names):
+                stdscr.addstr(2, 0, "Invalid index")
+
+            elif (int(client_index) in range(49, 49+len(self.peer_names))):
+                self.selected_receiver = self.peer_names[int(client_index)-49]
+                break
+
+            # break
+
+            stdscr.refresh()
+        # if (self.selected_receiver != ""):
+        #     return
+        curses.endwin()
+
+    def start_curses(self):
+        curses.wrapper(self.print_table)
 
     def get_local_ip(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -28,11 +63,10 @@ class Sender:
         with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
             s.bind(('', self.port))
-            s.settimeout(3)
 
             print("Listening for broadcast messages...")
 
-            while True:
+            while self.selected_receiver == "":
                 try:
                     data, addr = s.recvfrom(1024)
                 except socket.timeout:
