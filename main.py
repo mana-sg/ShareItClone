@@ -52,6 +52,7 @@ if __name__ == "__main__":
         #
 
         print("Sending file to: ", sender.selected_receiver)
+
         listen_peers_thread.join()
 
         sender.select_file()

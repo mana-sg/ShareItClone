@@ -33,11 +33,11 @@ class Sender:
             if (len(self.peer_names) == 0):
                 print("No peers found, please wait while we are scanning!")
 
-            elif client_index-48 >= len(self.peer_names):
+            elif client_index-49 >= len(self.peer_names):
                 stdscr.addstr(2, 0, "Invalid index")
 
             elif (int(client_index) in range(49, 49+len(self.peer_names))):
-                self.selected_receiver = self.peer_names[int(client_index)-49]
+                self.selected_receiver = self.receivers[int(client_index)-49][0]
                 break
 
             # break
