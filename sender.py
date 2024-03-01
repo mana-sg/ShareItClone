@@ -17,11 +17,6 @@ class Sender:
         self.peer_names = []
 
     def print_table(self, stdscr):
-
-        # indices = [i+1 for i in range(len(self.peer_names))]
-        # data = list(zip(indices, self.peer_names))
-        # table = tabulate(data, headers=["Index", "Peer Name"])
-        #
         while True:
             stdscr.clear()
             stdscr.nodelay(True)
@@ -40,11 +35,7 @@ class Sender:
                 self.selected_receiver = self.receivers[int(client_index)-49][0]
                 break
 
-            # break
-
             stdscr.refresh()
-        # if (self.selected_receiver != ""):
-        #     return
         curses.endwin()
 
     def start_curses(self):
