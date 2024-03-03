@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
         sender.select_file()
         sender.send_file_names()
-        sender.connect_to_peer()
+        sender.create_file_threads()
 
     elif choice == 2:
         receiver = Receiver(name)

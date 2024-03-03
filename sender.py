@@ -12,9 +12,20 @@ class Sender:
         self.my_ip = self.get_local_ip()
         self.port = 12345
         self.selected_receiver = ""
-        self.filepath = ""
+        self.filepath = []
         self.peer_port = [12333, 6666]
         self.peer_names = []
+
+    def create_file_threads(self):
+        while len(self.filepath):
+            if len(self.filepath) >= 10:
+                filenames = self.filepath[:10]
+                self.filepath = self.filepath[10:]
+                self.connect_to_peer(filenames)
+
+            else:
+                self.connect_to_peer(self.filepath)
+                self.filepath = []
 
     def print_table(self, stdscr):
         while True:
@@ -32,9 +43,11 @@ class Sender:
                 stdscr.addstr(2, 0, "Invalid index")
 
             elif (int(client_index) in range(49, 49+len(self.peer_names))):
-                self.selected_receiver = self.receivers[int(client_index)-49][0]
+                self.selected_receiver = self.receivers[int(
+                    client_index)-49][0]
                 break
 
+            # break
             stdscr.refresh()
         curses.endwin()
 
@@ -66,21 +79,28 @@ class Sender:
                     self.receivers.append(addr)
                     self.peer_names.append(data.decode())
 
-    def connect_to_peer(self):
+    def connect_to_peer(self, filenames):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
         context.load_verify_locations('certificates/shareit.crt')
         context.check_hostname = False
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((self.selected_receiver, self.peer_port[1]))
-            with context.wrap_socket(sock, server_hostname=self.selected_receiver) as ssock:
-                with open(self.filepath, 'rb') as f:
-                    while True:
-                        data = f.read(1048576)
-                        if not data:
-                            break
-                        ssock.send(data)
-                        # time.sleep(1)
-                print(f"{self.filepath} sent successfully")
+        print(filenames)
+        for file in filenames:
+            while True:
+                try:
+                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+                        sock.connect(
+                            (self.selected_receiver, self.peer_port[1]))
+                        with context.wrap_socket(sock, server_hostname=self.selected_receiver) as ssock:
+                            with open(file, 'rb') as f:
+                                while True:
+                                    data = f.read(1048576)
+                                    if not data:
+                                        break
+                                    ssock.send(data)
+                            print(f"{file} sent successfully")
+                    break
+                except Exception as e:
+                    continue
 
     def send_file_names(self):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
@@ -89,11 +109,12 @@ class Sender:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.selected_receiver, self.peer_port[0]))
             with context.wrap_socket(s, server_hostname=self.selected_receiver) as ssock:
-                ssock.sendall(self.filepath.split("/")[-1].encode())
+                for file in self.filepath:
+                    ssock.sendall(file.split("/")[-1].encode())
         time.sleep(3)
 
     def select_file(self):
         root = tk.Tk()
         root.withdraw()
-        self.filepath = filedialog.askopenfilename()
+        self.filepath = filedialog.askopenfilenames()
         root.destroy()
