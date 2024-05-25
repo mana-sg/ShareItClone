@@ -2,7 +2,6 @@ import socket
 import time
 import tkinter as tk
 from tkinter import filedialog
-import ssl
 import curses
 
 
@@ -80,9 +79,6 @@ class Sender:
                     self.peer_names.append(data.decode())
 
     def connect_to_peer(self, filenames):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        context.load_verify_locations('certificates/shareit.crt')
-        context.check_hostname = False
         print(filenames)
         for file in filenames:
             while True:
@@ -90,27 +86,22 @@ class Sender:
                     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                         sock.connect(
                             (self.selected_receiver, self.peer_port[1]))
-                        with context.wrap_socket(sock, server_hostname=self.selected_receiver) as ssock:
-                            with open(file, 'rb') as f:
-                                while True:
-                                    data = f.read(1048576)
-                                    if not data:
-                                        break
-                                    ssock.send(data)
-                            print(f"{file} sent successfully")
+                        with open(file, 'rb') as f:
+                            while True:
+                                data = f.read(1024)
+                                if not data:
+                                    break
+                                sock.send(data)
+                        print(f"{file} sent successfully")
                     break
-                except Exception as e:
+                except:
                     continue
 
     def send_file_names(self):
-        context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
-        context.load_verify_locations('certificates/shareit.crt')
-        context.check_hostname = False
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((self.selected_receiver, self.peer_port[0]))
-            with context.wrap_socket(s, server_hostname=self.selected_receiver) as ssock:
-                for file in self.filepath:
-                    ssock.sendall(file.split("/")[-1].encode())
+            for file in self.filepath:
+                s.sendall(file.split("/")[-1].encode())
         time.sleep(3)
 
     def select_file(self):
